@@ -1,0 +1,7 @@
+venv
+*.env
+.my_pgpass
+*.my_pgpass
+*.pg_service.conf
+*data.json
+db.sqlite3

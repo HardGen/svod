@@ -1,0 +1,21 @@
+{% extends 'app/base.html' %}
+
+
+{% block content  %} 
+    <table border="1px">
+        <tr>
+            <th>Id</th>
+            <th>ЛПУ</th>
+            <th>Название</th>
+            <th>Заведующий Отделением</th>
+        </tr>
+        {% for otd in otds %}
+            <tr>
+                <td>{{otd.idotd}}</td>
+                <td><a href="{% url 'otd_details' otd.idotd %}">{{otd.lpu}}</a></td>
+                <td><a href="{% url 'otd_details' otd.idotd %}">{{otd.otd_name}}</a></td>
+                <td><a href="{% url 'otd_details' otd.idotd %}">{{otd.zav_otd|default_if_none:"--"}}</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

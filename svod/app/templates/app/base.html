@@ -1,0 +1,34 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'app/css/style.css' %}">
+    <script src="{% static 'app/js/jquery-3.6.3.min.js' %}"></script>
+    <script src="{% static 'app/js/jquery.cookies.js' %}"></script>
+    <title>Document</title>
+</head>
+<body>
+    <header class="header">
+        <div class="header__logo">{{otd.otd_name}}</div>
+        <a href="{% url 'logout' %}" class="btn danger">Выйти</a>
+    </header>
+    <main class="main">
+        <nav class="nav">
+            <ul class="nav__items">
+                <li class="nav__item"><a href="#" class="nav__link">Утренняя Сводка</a></li>
+                <li class="nav__item"><a href="#" class="nav__link">Сводка по пожарной безопасности</a></li>
+                <li class="nav__item"><a href="{% url 'food_svod' %}" class="nav__link">Сводка по питанию</a></li>
+                <li class="nav__item"><a href="#" class="nav__link">Отчеты</a></li>
+                <li class="nav__item"><a href="{% url 'otds' %}" class="nav__link">Отделения</a></li>
+
+            </ul>
+        </nav>
+        <content class="content">
+            {% block content  %} {% endblock %}
+        </content>
+    </main>
+</body>
+</html>
