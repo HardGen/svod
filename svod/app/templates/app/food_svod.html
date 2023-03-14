@@ -1,62 +1,79 @@
-{% extends 'app/base.html' %}
+{% extends 'app/base.html' %} {% block content %}
+<div class="info">
+  <div>
+    <span>Заведеющая отделением: </span>{{otd.zav_otd|default_if_none:"--"}}
+  </div>
+  <div><span>Главная М/С: </span>{{otd.msister|default_if_none:"--"}}</div>
+  <a class="btn second" href="">Изменить данные</a>
+</div>
+<input type="date" name="datetime" id="datetime" class="datetime" />
+<table border="1px">
+  <tr>
+    <th rowspan="2">Отделения</th>
+    <th rowspan="2">Всего<br />Больных</th>
+    <th rowspan="2">в т.ч<br />детей</th>
+    <th rowspan="2">
+      Всего<br />матерей <br />
+      по уходу
+    </th>
+    <th rowspan="2">Из них<br />без<br />питания</th>
+    <th rowspan="2">
+      Ветераны <br />
+      ВОВ
+    </th>
+    <th colspan="12">Стандартные диеты (Столы)</th>
+  </tr>
+  <tr>
+    <th>Зонд</th>
+    <th>Голод</th>
+    <th>Кисель</th>
+    <th>Бульон</th>
+    <th>02</th>
+    <th>03</th>
+    <th>ОВД</th>
+    <th>ЩД</th>
+    <th>Д</th>
+    <th>ВБД</th>
+    <th>НБД</th>
+    <th>НКД</th>
+    <th>Дата</th>
+  </tr>
+  <tbody>
+    {% for row in svod %}
+    <tr>
+      <td>{{row.dt_svood}}</td>
+      <td>{{row.vsego}}</td>
+      <td>{{row.child}}</td>
+      <td>{{row.mam}}</td>
+      <td>{{row.mam_nofood}}</td>
+      <td>{{row.wow}}</td>
+      <td>{{row.zond}}</td>
+      <td>{{row.golod}}</td>
+      <td>{{row.diet_01_kis}}</td>
+      <td>{{row.diet_01_bul }}</td>
+      <td>{{row.diet_02}}</td>
+      <td>{{row.diet_03}}</td>
+      <td>{{row.diet_ovd}}</td>
+      <td>{{row.diet_shd}}</td>
+      <td>{{row.diet_child}}</td>
+      <td>{{row.diet_vdb}}</td>
+      <td>{{row.diet_nbd}}</td>
+      <td>{{row.diet_nkd}}</td>
+      <td>{{row.dt_create}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 
-{% block content  %} 
-    <div class="info">
-        <div><span>Заведеющая отделением: </span>{{otd.zav_otd|default_if_none:"--"}}</div>
-        <div><span>Главная М/С: </span>{{otd.msister|default_if_none:"--"}}</div>
-        <a class="btn second" href="">Изменить данные</a>
-    </div>
-    <table border="1px">
-        <tr>
-            <th rowspan="2">Отделения</th>
-            <th rowspan="2">Всего<br>Больных</th>
-            <th rowspan="2">в т.ч<br>детей</th>
-            <th rowspan="2">Всего<br>матерей <br> по уходу</th>
-            <th rowspan="2">Из них<br>без<br>питания</th>
-            <th rowspan="2">Ветераны <br> ВОВ</th>
-            <th colspan="12">
-                Стандартные диеты (Столы)
-            </th>
-        </tr>
-        <tr>
-            <th>Зонд</th>
-            <th>Голод</th>
-            <th>Кисель</th>
-            <th>Бульон</th>
-            <th>02</th>
-            <th>03</th>
-            <th>ОВД</th>
-            <th>ЩД</th>
-            <th>Д</th>
-            <th>ВБД</th>
-            <th>НБД</th>
-            <th>НКД</th>
-            <th>Дата</th>
-        </tr>
-        <tbody>
-            {% for row in svod %}
-            <tr>
-                <td>{{row.dt_svood}}</td>
-                <td>{{row.vsego}} </td>
-                <td>{{row.child}} </td>
-                <td>{{row.mam}} </td>
-                <td>{{row.mam_nofood}} </td>
-                <td>{{row.wow}} </td>
-                <td>{{row.zond}}</td>
-                <td>{{row.golod}}</td>
-                <td>{{row.diet_01_kis}}</td>
-                <td>{{row.diet_01_bul   }}</td>
-                <td>{{row.diet_02}}</td>
-                <td>{{row.diet_03}}</td>
-                <td>{{row.diet_ovd}}</td>
-                <td>{{row.diet_shd}}</td>
-                <td>{{row.diet_child}}</td>
-                <td>{{row.diet_vdb}}</td>
-                <td>{{row.diet_nbd}}</td>
-                <td>{{row.diet_nkd}}</td>
-                <td>{{row.dt_create}}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<script>
+  $(".datetime").change(function (e) {
+    $.ajax({
+      method: "GET",
+      url: `${e.target.value}/`,
+      success: function(data) {
+        console.log(JSON.parse(data.svod));
+      }
+    });
+  });
+</script>
 {% endblock %}
