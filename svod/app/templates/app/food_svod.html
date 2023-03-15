@@ -7,7 +7,8 @@
   <a class="btn second" href="">Изменить данные</a>
 </div>
 <input type="date" name="datetime" id="datetime" class="datetime" />
-<table border="1px">
+<p class="not-data"></p>
+<table class="svod-table" border="1px">
   <tr>
     <th rowspan="2">Отделения</th>
     <th rowspan="2">Всего<br />Больных</th>
@@ -38,41 +39,93 @@
     <th>НКД</th>
     <th>Дата</th>
   </tr>
-  <tbody>
-    {% for row in svod %}
-    <tr>
-      <td>{{row.dt_svood}}</td>
-      <td>{{row.vsego}}</td>
-      <td>{{row.child}}</td>
-      <td>{{row.mam}}</td>
-      <td>{{row.mam_nofood}}</td>
-      <td>{{row.wow}}</td>
-      <td>{{row.zond}}</td>
-      <td>{{row.golod}}</td>
-      <td>{{row.diet_01_kis}}</td>
-      <td>{{row.diet_01_bul }}</td>
-      <td>{{row.diet_02}}</td>
-      <td>{{row.diet_03}}</td>
-      <td>{{row.diet_ovd}}</td>
-      <td>{{row.diet_shd}}</td>
-      <td>{{row.diet_child}}</td>
-      <td>{{row.diet_vdb}}</td>
-      <td>{{row.diet_nbd}}</td>
-      <td>{{row.diet_nkd}}</td>
-      <td>{{row.dt_create}}</td>
-    </tr>
-    {% endfor %}
+  <tbody class="tbody active">
+    
   </tbody>
 </table>
 
 <script>
+  $(document).ready(function () {
+    const today = `${new Date().getFullYear()}-${new Date().getMonth()}-${new Date().getDate()}`;
+    //console.log(new Date().toISOString().slice(0, 10))
+    $.ajax({
+      method: "GET",
+      url: `${today}/`,
+      success: function (data, status) {
+        console.log(data);
+        if (data.data != undefined) {
+          $(".not-data").hide()
+          $('.svod-table').addClass('active')
+          let json = JSON.parse(data.data);
+          console.log(json);
+          const td_map = new Map();
+
+          for (let i = 0; i < json.length; i++) {
+            let tr = document.createElement("tr");
+            $(".row").remove();
+
+            td_map.set("idotd", document.createElement("td"));
+            td_map.set("vsego", document.createElement("td"));
+            td_map.set("child", document.createElement("td"));
+            td_map.set("mam", document.createElement("td"));
+            td_map.set("mam_nofood", document.createElement("td"));
+            td_map.set("wow", document.createElement("td"));
+            td_map.set("zond", document.createElement("td"));
+            td_map.set("golod", document.createElement("td"));
+            td_map.set("diet_01_kis", document.createElement("td"));
+            td_map.set("diet_01_bul", document.createElement("td"));
+            td_map.set("diet_02", document.createElement("td"));
+            td_map.set("diet_03", document.createElement("td"));
+            td_map.set("diet_ovd", document.createElement("td"));
+            td_map.set("diet_shd", document.createElement("td"));
+            td_map.set("diet_child", document.createElement("td"));
+            td_map.set("diet_vbd", document.createElement("td"));
+            td_map.set("diet_nbd", document.createElement("td"));
+            td_map.set("diet_nkd", document.createElement("td"));
+            td_map.set("dt_Svood", document.createElement("td"));
+
+            $(td_map.get("idotd")).text(json[i]["fields"]["idotd"]);
+            $(td_map.get("vsego")).text(json[i]["fields"]["vsego"]);
+            $(td_map.get("child")).text(json[i]["fields"]["child"]);
+            $(td_map.get("wow")).text(json[i]["fields"]["wow"]);
+            $(td_map.get("mam")).text(json[i]["fields"]["mam"]);
+            $(td_map.get("mam_nofood")).text(json[i]["fields"]["mam_nofood"]);
+            $(td_map.get("zond")).text(json[i]["fields"]["zond"]);
+            $(td_map.get("golod")).text(json[i]["fields"]["golod"]);
+            $(td_map.get("diet_01_kis")).text(json[i]["fields"]["diet_01_kis"]);
+            $(td_map.get("diet_01_bul")).text(json[i]["fields"]["diet_01_bul"]);
+            $(td_map.get("diet_02")).text(json[i]["fields"]["diet_02"]);
+            $(td_map.get("diet_03")).text(json[i]["fields"]["diet_03"]);
+            $(td_map.get("diet_ovd")).text(json[i]["fields"]["diet_ovd"]);
+            $(td_map.get("diet_shd")).text(json[i]["fields"]["diet_shd"]);
+            $(td_map.get("diet_child")).text(json[i]["fields"]["diet_child"]);
+            $(td_map.get("diet_vbd")).text(json[i]["fields"]["diet_vdb"]);
+            $(td_map.get("diet_nbd")).text(json[i]["fields"]["diet_nbd"]);
+            $(td_map.get("diet_nkd")).text(json[i]["fields"]["diet_nkd"]);
+            $(td_map.get("dt_Svood")).text(json[i]["fields"]["dt_svood"]);
+
+            for (let elem of td_map.values()) {
+              $(tr).append(elem);
+            }
+
+            $(".tbody").append(tr);
+          }
+        } else {
+          $(".not-data").text('Нет Данных')
+          $(".svod-table").removeClass('active')
+        }
+      },
+    });
+  });
+
   $(".datetime").change(function (e) {
+    console.log(e.target.value);
     $.ajax({
       method: "GET",
       url: `${e.target.value}/`,
-      success: function(data) {
+      success: function (data) {
         console.log(JSON.parse(data.svod));
-      }
+      },
     });
   });
 </script>

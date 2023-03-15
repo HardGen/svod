@@ -1,10 +1,12 @@
 
 import datetime
+import json
 from django.contrib import messages
-from django.http import Http404, HttpRequest
+from django.http import Http404, HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from .models import *
+from django.core import serializers
 
 from django.utils import timezone
 
@@ -92,7 +94,6 @@ def food_svod(request: HttpRequest):
     otd = Otd.objects.get(idotd = otd_id)
     food_svod = otd.food_svod_set.all()
 
-    print(len(food_svod))
 
     context = {
         'svod': food_svod,
@@ -101,3 +102,24 @@ def food_svod(request: HttpRequest):
     return render(request, 'app/food_svod.html', context=context)
 
 
+def get_svod_by_date(request: HttpRequest, date:str):
+    year = date.split('-')[0]
+    month = int(date.split('-')[1]) + 1
+    print(date)
+    day = date.split('-')[2]
+
+    otd_id = request.COOKIES.get('otd')
+
+    svod = Otd.objects.get(pk=otd_id)
+    result = svod.food_svod_set.filter(
+        dt_svood__year = year,
+        dt_svood__month = month,
+        dt_svood__day  = day 
+    )
+
+    if (result.count() == 0 ):
+        return JsonResponse({'message': 'нет данных'})
+
+    data = serializers.serialize("json",result)
+    
+    return JsonResponse({'message': date, 'data': data})

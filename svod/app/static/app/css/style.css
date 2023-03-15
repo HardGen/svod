@@ -183,3 +183,10 @@ tr:nth-child(even) {
 .info span {
     font-weight: 700;
 }
+
+.svod-table .active {
+    display: block;
+}
+.svod-table {
+    display: none;
+}
