@@ -17,7 +17,7 @@ class Otd(models.Model):
 
 
 class Food_svod(models.Model):
-    dt_svood = models.DateTimeField(auto_created=True)
+    dt_svood = models.DateTimeField(auto_now_add=True)
     priznak = models.IntegerField(default=0)
     idotd = models.ForeignKey('Otd', on_delete=models.RESTRICT)
     vsego = models.IntegerField(default=0)

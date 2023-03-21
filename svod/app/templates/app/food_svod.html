@@ -8,125 +8,295 @@
 </div>
 <input type="date" name="datetime" id="datetime" class="datetime" />
 <p class="not-data"></p>
-<table class="svod-table" border="1px">
-  <tr>
-    <th rowspan="2">Отделения</th>
-    <th rowspan="2">Всего<br />Больных</th>
-    <th rowspan="2">в т.ч<br />детей</th>
-    <th rowspan="2">
-      Всего<br />матерей <br />
-      по уходу
-    </th>
-    <th rowspan="2">Из них<br />без<br />питания</th>
-    <th rowspan="2">
-      Ветераны <br />
-      ВОВ
-    </th>
-    <th colspan="12">Стандартные диеты (Столы)</th>
-  </tr>
-  <tr>
-    <th>Зонд</th>
-    <th>Голод</th>
-    <th>Кисель</th>
-    <th>Бульон</th>
-    <th>02</th>
-    <th>03</th>
-    <th>ОВД</th>
-    <th>ЩД</th>
-    <th>Д</th>
-    <th>ВБД</th>
-    <th>НБД</th>
-    <th>НКД</th>
-    <th>Дата</th>
-  </tr>
-  <tbody class="tbody active">
-    
-  </tbody>
+<h2 class="am7">Сводка на 7:00</h2>
+<table border="1px">
+  <thead>
+    <tr>
+      <th rowspan="2">Отделения</th>
+      <th rowspan="2">Всего<br />Больных</th>
+      <th rowspan="2">в т.ч<br />детей</th>
+      <th rowspan="2">
+        Всего<br />матерей <br />
+        по уходу
+      </th>
+      <th rowspan="2">Из них<br />без<br />питания</th>
+      <th rowspan="2">
+        Ветераны <br />
+        ВОВ
+      </th>
+      <th colspan="12">Стандартные диеты (Столы)</th>
+    </tr>
+    <tr>
+      <th>Зонд</th>
+      <th>Голод</th>
+      <th>Кисель</th>
+      <th>Бульон</th>
+      <th>02</th>
+      <th>03</th>
+      <th>ОВД</th>
+      <th>ЩД</th>
+      <th>Д</th>
+      <th>ВБД</th>
+      <th>НБД</th>
+      <th>НКД</th>
+    </tr>
+  </thead>
+  <tbody class="tbody"></tbody>
 </table>
+<div class="svod_update_date"></div>
+<div class="fio_ms">Дежурная</div>
+<button class="create_new_svod">Добавить Данные</button>
+
+<div class="print">
+  <fieldset>
+    <legend class="print_title">Вывод на печать</legend>
+    <div class="print_container">
+      <div>
+        <input class="report_type"  type="radio" name="report_type" id="report_type1"  checked><label class="radiobtn_lbl" for="report_type1">на 07:00</label>
+        <input class="report_type"  type="radio" name="report_type" id="report_type2"><label class="radiobtn_lbl" for="report_type2">Дополнительно</label>
+        <input class="report_type"  type="radio" name="report_type" id="report_type3"><label class="radiobtn_lbl" for="report_type3">Общая сводка</label>
+      </div>
+      <div class="save">
+        <div class="save_data btn">Сохранить данные за </div>
+      </div>
+    </div>
+  </fieldset>
+</div>
+
 
 <script>
+  Date.prototype.toDateInputValue = function () {
+    var local = new Date(this);
+    local.setMinutes(this.getMinutes() - this.getTimezoneOffset());
+    return local.toJSON().slice(0, 10);
+  };
+
+  //отравляем запрос на получение текущих данных
   $(document).ready(function () {
-    const today = `${new Date().getFullYear()}-${new Date().getMonth()}-${new Date().getDate()}`;
-    //console.log(new Date().toISOString().slice(0, 10))
+
+
+
+    $("#datetime").val(new Date().toDateInputValue());
+
+    $(".save_data").text(`Сохранить данные за ${$("#datetime").val()}`)
+
+    const today = $("#datetime").val();
+    const year = today.split("-")[0];
+    const month = today.split("-")[1];
+    const day = today.split("-")[2];
+
     $.ajax({
       method: "GET",
-      url: `${today}/`,
+      url: `${year}/${month}/${day}/`,
       success: function (data, status) {
-        console.log(data);
-        if (data.data != undefined) {
-          $(".not-data").hide()
-          $('.svod-table').addClass('active')
-          let json = JSON.parse(data.data);
-          console.log(json);
-          const td_map = new Map();
+        if (data.svod == undefined) {
+          $(".create_new_svod").addClass("active");
+        }
 
+        if (data.svod != undefined) {
+          $(".create_new_svod").removeClass("active");
+          json = JSON.parse(data.svod);
           for (let i = 0; i < json.length; i++) {
-            let tr = document.createElement("tr");
-            $(".row").remove();
-
-            td_map.set("idotd", document.createElement("td"));
-            td_map.set("vsego", document.createElement("td"));
-            td_map.set("child", document.createElement("td"));
-            td_map.set("mam", document.createElement("td"));
-            td_map.set("mam_nofood", document.createElement("td"));
-            td_map.set("wow", document.createElement("td"));
-            td_map.set("zond", document.createElement("td"));
-            td_map.set("golod", document.createElement("td"));
-            td_map.set("diet_01_kis", document.createElement("td"));
-            td_map.set("diet_01_bul", document.createElement("td"));
-            td_map.set("diet_02", document.createElement("td"));
-            td_map.set("diet_03", document.createElement("td"));
-            td_map.set("diet_ovd", document.createElement("td"));
-            td_map.set("diet_shd", document.createElement("td"));
-            td_map.set("diet_child", document.createElement("td"));
-            td_map.set("diet_vbd", document.createElement("td"));
-            td_map.set("diet_nbd", document.createElement("td"));
-            td_map.set("diet_nkd", document.createElement("td"));
-            td_map.set("dt_Svood", document.createElement("td"));
-
-            $(td_map.get("idotd")).text(json[i]["fields"]["idotd"]);
-            $(td_map.get("vsego")).text(json[i]["fields"]["vsego"]);
-            $(td_map.get("child")).text(json[i]["fields"]["child"]);
-            $(td_map.get("wow")).text(json[i]["fields"]["wow"]);
-            $(td_map.get("mam")).text(json[i]["fields"]["mam"]);
-            $(td_map.get("mam_nofood")).text(json[i]["fields"]["mam_nofood"]);
-            $(td_map.get("zond")).text(json[i]["fields"]["zond"]);
-            $(td_map.get("golod")).text(json[i]["fields"]["golod"]);
-            $(td_map.get("diet_01_kis")).text(json[i]["fields"]["diet_01_kis"]);
-            $(td_map.get("diet_01_bul")).text(json[i]["fields"]["diet_01_bul"]);
-            $(td_map.get("diet_02")).text(json[i]["fields"]["diet_02"]);
-            $(td_map.get("diet_03")).text(json[i]["fields"]["diet_03"]);
-            $(td_map.get("diet_ovd")).text(json[i]["fields"]["diet_ovd"]);
-            $(td_map.get("diet_shd")).text(json[i]["fields"]["diet_shd"]);
-            $(td_map.get("diet_child")).text(json[i]["fields"]["diet_child"]);
-            $(td_map.get("diet_vbd")).text(json[i]["fields"]["diet_vdb"]);
-            $(td_map.get("diet_nbd")).text(json[i]["fields"]["diet_nbd"]);
-            $(td_map.get("diet_nkd")).text(json[i]["fields"]["diet_nkd"]);
-            $(td_map.get("dt_Svood")).text(json[i]["fields"]["dt_svood"]);
-
-            for (let elem of td_map.values()) {
-              $(tr).append(elem);
-            }
-
-            $(".tbody").append(tr);
+            $(".tbody").append(
+              CreateTable(json[i]["fields"], [
+                "dt_create",
+                "fio_ms",
+                "dt_svood",
+              ])
+            );
           }
-        } else {
-          $(".not-data").text('Нет Данных')
-          $(".svod-table").removeClass('active')
+          $("fio_ms")
+            .text(json[0]["fields"]["fio_ms"])
+          $(".svod_update_date")
+          .text("Время Внесения сводки: " + json[0]["fields"]["dt_create"])
+          .addClass("create_svod")
         }
       },
     });
   });
 
+  // отправляем запрос на получение данные за определенную дату
   $(".datetime").change(function (e) {
-    console.log(e.target.value);
+    const year = e.target.value.split("-")[0];
+    const month = e.target.value.split("-")[1];
+    const day = e.target.value.split("-")[2];
+
     $.ajax({
       method: "GET",
-      url: `${e.target.value}/`,
+      url: `${year}/${month}/${day}/`,
       success: function (data) {
-        console.log(JSON.parse(data.svod));
+        $(".row").remove();
+
+        if (data.svod == undefined) {
+          console.log("нет данные");
+          $(".create_new_svod").addClass("active");
+        }
+        if (data.svod != undefined) {
+          $(".create_new_svod").removeClass("active");
+          json = JSON.parse(data.svod);
+          console.log(json);
+          for (let i = 0; i < json.length; i++) {
+            $(".tbody").append(
+              CreateTable(json[i]["fields"], [
+                "dt_create",
+                "fio_ms",
+                "dt_svood",
+              ])
+            );
+          }
+          $("fio_ms")
+            .text(json[0]["fields"]["fio_ms"])
+          $(".svod_update_date")
+          .text("Время Внесения сводки: " + json[0]["fields"]["dt_create"])
+          .addClass("create_svod")
+        }
       },
     });
   });
+
+  function CreateTable(json, filters, newDay = false) {
+    $(".row").remove()
+    const tr = document.createElement("tr");
+    $(tr).addClass("row");
+    const map = new Map();
+
+    const headers = getKeys(json, filters, true);
+
+    for (let i = 0; i < headers.length; i++) {
+      map.set(headers[i], document.createElement("td"));
+
+      $(map.get(headers[i]))
+        .text(json[headers[i]])
+        .addClass("cell")
+        .attr("value", json[headers[i]])
+        .attr("time", json["dt_svood"])
+        .attr("column-name", headers[i])
+        .dblclick(function () {
+          $(".input-table").remove();
+          //при клике на столбец otd_id ничего не должно происходить
+          if ($(this).attr("column-name") == "idotd") return;
+
+          const time = $(this).attr("time");
+          const value = $(this).attr("value");
+          const column = $(this).attr("column-name");
+          $(".input").remove();
+          const inp = document.createElement("input");
+
+          $(inp)
+            .val(value)
+            .addClass("input-table")
+            .attr("type", "number")
+            .keypress(function (e) {
+              if (e.key === "Enter") {
+                console.log("save");
+                sendRequest(time, e.target.value, column);
+                $(this).remove();
+              }
+            });
+          $(this).append(inp);
+        });
+      $(tr).append(map.get(headers[i]));
+    }
+
+    return tr;
+  }
+
+  function getKeys(json, filters = [], sortHeader = false) {
+    let headers = [];
+    for (let k in json) {
+      if (!filters.includes(k)) {
+        headers.push(k);
+      }
+    }
+    if (sortHeaders)
+      return sortHeaders(
+        [
+          "idotd",
+          "vsego",
+          "child",
+          "mam",
+          "mam_nofood",
+          "wow",
+          "zond",
+          "golod",
+          "diet_01_kis",
+          "diet_01_bul",
+          "diet_02",
+          "diet_03",
+          "diet_ovd",
+          "diet_shd",
+          "diet_child",
+          "diet_vdb",
+          "diet_nbd",
+          "diet_nkd",
+        ],
+        headers
+      );
+    else return headers;
+  }
+
+  function sortHeaders(filter, headers) {
+    const result = filter.map((header) => {
+      return headers.find((elem) => {
+        return elem == header;
+      });
+    });
+
+    return result;
+  }
+
+  function sendRequest(time, value, column) {
+    time = time.replaceAll("T", " ").split(".")[0];
+    $.ajax({
+      method: "post",
+      url: `update/`,
+      data: {
+        column,
+        time,
+        value,
+        csrfmiddlewaretoken: $.cookie("csrftoken"),
+      },
+      success: function (data) {
+        json = JSON.parse(data.otd);
+        console.log(json);
+        for (let i = 0; i < json.length; i++) {
+          $(".tbody").append(
+            CreateTable(json[i]["fields"], ["dt_create", "fio_ms", "dt_svood"])
+          );
+        }
+      },
+    });
+  }
+
+  function changeDateFormat(date) {
+    //yyyy.mm.dd -> yyyy-mm-dd
+    return date.replaceAll(".", "-");
+  }
+
+  $(".create_new_svod").click(function () {
+    $.ajax({
+      method: "get",
+      url: "new_svod",
+      success: function (data) {
+        console.log(data)
+        const json = JSON.parse(data.svod);
+        for (let i = 0; i < json.length; i++) {
+          $(".tbody").append(
+            CreateTable(json[i]["fields"], ["dt_create", "fio_ms", "dt_svood"])
+          );
+        }
+      },
+    });
+  });
+
+  $(".save_data").click(() => {
+    $.ajax({
+      url: `report/${$("#datetime").val()}/`,
+      method: 'get',
+      success: (data) => {
+        console.log(data.status);
+      }
+    })
+  })
 </script>
 {% endblock %}
