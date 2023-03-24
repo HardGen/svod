@@ -9,40 +9,48 @@
 <input type="date" name="datetime" id="datetime" class="datetime" />
 <p class="not-data"></p>
 <h2 class="am7">Сводка на 7:00</h2>
-<table border="1px">
-  <thead>
-    <tr>
-      <th rowspan="2">Отделения</th>
-      <th rowspan="2">Всего<br />Больных</th>
-      <th rowspan="2">в т.ч<br />детей</th>
-      <th rowspan="2">
-        Всего<br />матерей <br />
-        по уходу
-      </th>
-      <th rowspan="2">Из них<br />без<br />питания</th>
-      <th rowspan="2">
-        Ветераны <br />
-        ВОВ
-      </th>
-      <th colspan="12">Стандартные диеты (Столы)</th>
-    </tr>
-    <tr>
-      <th>Зонд</th>
-      <th>Голод</th>
-      <th>Кисель</th>
-      <th>Бульон</th>
-      <th>02</th>
-      <th>03</th>
-      <th>ОВД</th>
-      <th>ЩД</th>
-      <th>Д</th>
-      <th>ВБД</th>
-      <th>НБД</th>
-      <th>НКД</th>
-    </tr>
-  </thead>
-  <tbody class="tbody"></tbody>
-</table>
+
+<div class="table_content">
+  <table border="1px">
+    <thead>
+      <tr>
+        <th rowspan="2">Отделения</th>
+        <th rowspan="2">Всего<br />Больных</th>
+        <th rowspan="2">в т.ч<br />детей</th>
+        <th rowspan="2">
+          Всего<br />матерей <br />
+          по уходу
+        </th>
+        <th rowspan="2">Из них<br />без<br />питания</th>
+        <th rowspan="2">
+          Ветераны <br />
+          ВОВ
+        </th>
+        <th colspan="16">Стандартные диеты (Столы)</th>
+      </tr>
+      <tr>
+        <th>Зонд</th>
+        <th>Голод</th>
+        <th>Кисель</th>
+        <th>Бульон</th>
+        <th>02</th>
+        <th>03</th>
+        <th>ОВД</th>
+        <th>ЩД</th>
+        <th>Д</th>
+        <th>ВБД</th>
+        <th>НБД</th>
+        <th>НКД</th>
+        <th>1-3 лет</th>
+        <th>3-7 лет</th>
+        <th>7-11 лет</th>
+        <th>11-18 лет</th>
+      </tr>
+    </thead>
+    <tbody class="tbody"></tbody>
+  </table>
+</div>
+
 <div class="svod_update_date"></div>
 <div class="fio_ms">Дежурная</div>
 <button class="create_new_svod">Добавить Данные</button>
@@ -74,8 +82,6 @@
   //отравляем запрос на получение текущих данных
   $(document).ready(function () {
 
-
-
     $("#datetime").val(new Date().toDateInputValue());
 
     $(".save_data").text(`Сохранить данные за ${$("#datetime").val()}`)
@@ -84,7 +90,8 @@
     const year = today.split("-")[0];
     const month = today.split("-")[1];
     const day = today.split("-")[2];
-
+    
+    
     $.ajax({
       method: "GET",
       url: `${year}/${month}/${day}/`,
@@ -120,7 +127,12 @@
     const year = e.target.value.split("-")[0];
     const month = e.target.value.split("-")[1];
     const day = e.target.value.split("-")[2];
+    console.log(`${year}-${month}-${day}`);
 
+    GetDateAfterLoad(year, day, month)
+  });
+
+  function GetDateAfterLoad(year, day, month) {
     $.ajax({
       method: "GET",
       url: `${year}/${month}/${day}/`,
@@ -128,7 +140,7 @@
         $(".row").remove();
 
         if (data.svod == undefined) {
-          console.log("нет данные");
+          console.log("нет данных");
           $(".create_new_svod").addClass("active");
         }
         if (data.svod != undefined) {
@@ -152,10 +164,9 @@
         }
       },
     });
-  });
+  }
 
   function CreateTable(json, filters, newDay = false) {
-    $(".row").remove()
     const tr = document.createElement("tr");
     $(tr).addClass("row");
     const map = new Map();
@@ -168,6 +179,7 @@
       $(map.get(headers[i]))
         .text(json[headers[i]])
         .addClass("cell")
+        .attr('otd_id', json['idotd'])
         .attr("value", json[headers[i]])
         .attr("time", json["dt_svood"])
         .attr("column-name", headers[i])
@@ -179,6 +191,7 @@
           const time = $(this).attr("time");
           const value = $(this).attr("value");
           const column = $(this).attr("column-name");
+          const otd_id = $(this).attr('otd_id')
           $(".input").remove();
           const inp = document.createElement("input");
 
@@ -189,7 +202,12 @@
             .keypress(function (e) {
               if (e.key === "Enter") {
                 console.log("save");
-                sendRequest(time, e.target.value, column);
+                if($.cookie('otd') == 'nmb1'){
+                  console.log(otd_id)
+                  sendRequest(time, e.target.value, column, otd_id);
+                }
+                else
+                  sendRequest(time, e.target.value, column);
                 $(this).remove();
               }
             });
@@ -197,7 +215,6 @@
         });
       $(tr).append(map.get(headers[i]));
     }
-
     return tr;
   }
 
@@ -229,6 +246,10 @@
           "diet_vdb",
           "diet_nbd",
           "diet_nkd",
+          "diet_age_1_3",
+          "diet_age_3_7",
+          "diet_age_7_11",
+          "diet_age_11_18"
         ],
         headers
       );
@@ -245,7 +266,7 @@
     return result;
   }
 
-  function sendRequest(time, value, column) {
+  function sendRequest(time, value, column, otd_id=null) {
     time = time.replaceAll("T", " ").split(".")[0];
     $.ajax({
       method: "post",
@@ -254,9 +275,19 @@
         column,
         time,
         value,
+        otd_id,
         csrfmiddlewaretoken: $.cookie("csrftoken"),
       },
       success: function (data) {
+        $('.row').remove()
+        const year = time.split(' ')[0].split('-')[0]
+        const month = time.split(' ')[0].split('-')[1]
+        const day = time.split(' ')[0].split('-')[2]
+        console.log(year);
+        console.log(month);
+        console.log(day);
+
+
         json = JSON.parse(data.otd);
         console.log(json);
         for (let i = 0; i < json.length; i++) {
@@ -298,5 +329,11 @@
       }
     })
   })
+
+  function GetDateAndTime(){//['YYYY', "MM", "DD", 'HH', "MM", 'SS']
+
+    return [...new Date().toLocaleDateString().split('.'), ...new Date().toLocaleTimeString().split(':')]
+    
+  }
 </script>
 {% endblock %}
