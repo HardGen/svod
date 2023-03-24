@@ -26,9 +26,20 @@
 
             </ul>
         </nav>
+        <div class="nav_btn_move">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
         <content class="content">
             {% block content  %} {% endblock %}
         </content>
     </main>
+
+    <script>
+        $(".nav_btn_move").click(function(e) {
+            $('.nav').fadeToggle()
+        })
+    </script>
 </body>
 </html>

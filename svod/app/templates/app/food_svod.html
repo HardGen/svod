@@ -7,73 +7,333 @@
   <a class="btn second" href="">Изменить данные</a>
 </div>
 <input type="date" name="datetime" id="datetime" class="datetime" />
-<table border="1px">
-  <tr>
-    <th rowspan="2">Отделения</th>
-    <th rowspan="2">Всего<br />Больных</th>
-    <th rowspan="2">в т.ч<br />детей</th>
-    <th rowspan="2">
-      Всего<br />матерей <br />
-      по уходу
-    </th>
-    <th rowspan="2">Из них<br />без<br />питания</th>
-    <th rowspan="2">
-      Ветераны <br />
-      ВОВ
-    </th>
-    <th colspan="12">Стандартные диеты (Столы)</th>
-  </tr>
-  <tr>
-    <th>Зонд</th>
-    <th>Голод</th>
-    <th>Кисель</th>
-    <th>Бульон</th>
-    <th>02</th>
-    <th>03</th>
-    <th>ОВД</th>
-    <th>ЩД</th>
-    <th>Д</th>
-    <th>ВБД</th>
-    <th>НБД</th>
-    <th>НКД</th>
-    <th>Дата</th>
-  </tr>
-  <tbody>
-    {% for row in svod %}
-    <tr>
-      <td>{{row.dt_svood}}</td>
-      <td>{{row.vsego}}</td>
-      <td>{{row.child}}</td>
-      <td>{{row.mam}}</td>
-      <td>{{row.mam_nofood}}</td>
-      <td>{{row.wow}}</td>
-      <td>{{row.zond}}</td>
-      <td>{{row.golod}}</td>
-      <td>{{row.diet_01_kis}}</td>
-      <td>{{row.diet_01_bul }}</td>
-      <td>{{row.diet_02}}</td>
-      <td>{{row.diet_03}}</td>
-      <td>{{row.diet_ovd}}</td>
-      <td>{{row.diet_shd}}</td>
-      <td>{{row.diet_child}}</td>
-      <td>{{row.diet_vdb}}</td>
-      <td>{{row.diet_nbd}}</td>
-      <td>{{row.diet_nkd}}</td>
-      <td>{{row.dt_create}}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<p class="not-data"></p>
+<h2 class="am7">Сводка на 7:00</h2>
+
+<div class="table_content">
+  <table border="1px">
+    <thead>
+      <tr>
+        <th rowspan="2">Отделения</th>
+        <th rowspan="2">Всего<br />Больных</th>
+        <th rowspan="2">в т.ч<br />детей</th>
+        <th rowspan="2">
+          Всего<br />матерей <br />
+          по уходу
+        </th>
+        <th rowspan="2">Из них<br />без<br />питания</th>
+        <th rowspan="2">
+          Ветераны <br />
+          ВОВ
+        </th>
+        <th colspan="16">Стандартные диеты (Столы)</th>
+      </tr>
+      <tr>
+        <th>Зонд</th>
+        <th>Голод</th>
+        <th>Кисель</th>
+        <th>Бульон</th>
+        <th>02</th>
+        <th>03</th>
+        <th>ОВД</th>
+        <th>ЩД</th>
+        <th>Д</th>
+        <th>ВБД</th>
+        <th>НБД</th>
+        <th>НКД</th>
+        <th>1-3 лет</th>
+        <th>3-7 лет</th>
+        <th>7-11 лет</th>
+        <th>11-18 лет</th>
+      </tr>
+    </thead>
+    <tbody class="tbody"></tbody>
+  </table>
+</div>
+
+<div class="svod_update_date"></div>
+<div class="fio_ms">Дежурная</div>
+<button class="create_new_svod">Добавить Данные</button>
+
+<div class="print">
+  <fieldset>
+    <legend class="print_title">Вывод на печать</legend>
+    <div class="print_container">
+      <div>
+        <input class="report_type"  type="radio" name="report_type" id="report_type1"  checked><label class="radiobtn_lbl" for="report_type1">на 07:00</label>
+        <input class="report_type"  type="radio" name="report_type" id="report_type2"><label class="radiobtn_lbl" for="report_type2">Дополнительно</label>
+        <input class="report_type"  type="radio" name="report_type" id="report_type3"><label class="radiobtn_lbl" for="report_type3">Общая сводка</label>
+      </div>
+      <div class="save">
+        <div class="save_data btn">Сохранить данные за </div>
+      </div>
+    </div>
+  </fieldset>
+</div>
+
 
 <script>
-  $(".datetime").change(function (e) {
+  Date.prototype.toDateInputValue = function () {
+    var local = new Date(this);
+    local.setMinutes(this.getMinutes() - this.getTimezoneOffset());
+    return local.toJSON().slice(0, 10);
+  };
+
+  //отравляем запрос на получение текущих данных
+  $(document).ready(function () {
+
+    $("#datetime").val(new Date().toDateInputValue());
+
+    $(".save_data").text(`Сохранить данные за ${$("#datetime").val()}`)
+
+    const today = $("#datetime").val();
+    const year = today.split("-")[0];
+    const month = today.split("-")[1];
+    const day = today.split("-")[2];
+    
+    
     $.ajax({
       method: "GET",
-      url: `${e.target.value}/`,
-      success: function(data) {
-        console.log(JSON.parse(data.svod));
-      }
+      url: `${year}/${month}/${day}/`,
+      success: function (data, status) {
+        if (data.svod == undefined) {
+          $(".create_new_svod").addClass("active");
+        }
+
+        if (data.svod != undefined) {
+          $(".create_new_svod").removeClass("active");
+          json = JSON.parse(data.svod);
+          for (let i = 0; i < json.length; i++) {
+            $(".tbody").append(
+              CreateTable(json[i]["fields"], [
+                "dt_create",
+                "fio_ms",
+                "dt_svood",
+              ])
+            );
+          }
+          $("fio_ms")
+            .text(json[0]["fields"]["fio_ms"])
+          $(".svod_update_date")
+          .text("Время Внесения сводки: " + json[0]["fields"]["dt_create"])
+          .addClass("create_svod")
+        }
+      },
     });
   });
+
+  // отправляем запрос на получение данные за определенную дату
+  $(".datetime").change(function (e) {
+    const year = e.target.value.split("-")[0];
+    const month = e.target.value.split("-")[1];
+    const day = e.target.value.split("-")[2];
+    console.log(`${year}-${month}-${day}`);
+
+    GetDateAfterLoad(year, day, month)
+  });
+
+  function GetDateAfterLoad(year, day, month) {
+    $.ajax({
+      method: "GET",
+      url: `${year}/${month}/${day}/`,
+      success: function (data) {
+        $(".row").remove();
+
+        if (data.svod == undefined) {
+          console.log("нет данных");
+          $(".create_new_svod").addClass("active");
+        }
+        if (data.svod != undefined) {
+          $(".create_new_svod").removeClass("active");
+          json = JSON.parse(data.svod);
+          console.log(json);
+          for (let i = 0; i < json.length; i++) {
+            $(".tbody").append(
+              CreateTable(json[i]["fields"], [
+                "dt_create",
+                "fio_ms",
+                "dt_svood",
+              ])
+            );
+          }
+          $("fio_ms")
+            .text(json[0]["fields"]["fio_ms"])
+          $(".svod_update_date")
+          .text("Время Внесения сводки: " + json[0]["fields"]["dt_create"])
+          .addClass("create_svod")
+        }
+      },
+    });
+  }
+
+  function CreateTable(json, filters, newDay = false) {
+    const tr = document.createElement("tr");
+    $(tr).addClass("row");
+    const map = new Map();
+
+    const headers = getKeys(json, filters, true);
+
+    for (let i = 0; i < headers.length; i++) {
+      map.set(headers[i], document.createElement("td"));
+
+      $(map.get(headers[i]))
+        .text(json[headers[i]])
+        .addClass("cell")
+        .attr('otd_id', json['idotd'])
+        .attr("value", json[headers[i]])
+        .attr("time", json["dt_svood"])
+        .attr("column-name", headers[i])
+        .dblclick(function () {
+          $(".input-table").remove();
+          //при клике на столбец otd_id ничего не должно происходить
+          if ($(this).attr("column-name") == "idotd") return;
+
+          const time = $(this).attr("time");
+          const value = $(this).attr("value");
+          const column = $(this).attr("column-name");
+          const otd_id = $(this).attr('otd_id')
+          $(".input").remove();
+          const inp = document.createElement("input");
+
+          $(inp)
+            .val(value)
+            .addClass("input-table")
+            .attr("type", "number")
+            .keypress(function (e) {
+              if (e.key === "Enter") {
+                console.log("save");
+                if($.cookie('otd') == 'nmb1'){
+                  console.log(otd_id)
+                  sendRequest(time, e.target.value, column, otd_id);
+                }
+                else
+                  sendRequest(time, e.target.value, column);
+                $(this).remove();
+              }
+            });
+          $(this).append(inp);
+        });
+      $(tr).append(map.get(headers[i]));
+    }
+    return tr;
+  }
+
+  function getKeys(json, filters = [], sortHeader = false) {
+    let headers = [];
+    for (let k in json) {
+      if (!filters.includes(k)) {
+        headers.push(k);
+      }
+    }
+    if (sortHeaders)
+      return sortHeaders(
+        [
+          "idotd",
+          "vsego",
+          "child",
+          "mam",
+          "mam_nofood",
+          "wow",
+          "zond",
+          "golod",
+          "diet_01_kis",
+          "diet_01_bul",
+          "diet_02",
+          "diet_03",
+          "diet_ovd",
+          "diet_shd",
+          "diet_child",
+          "diet_vdb",
+          "diet_nbd",
+          "diet_nkd",
+          "diet_age_1_3",
+          "diet_age_3_7",
+          "diet_age_7_11",
+          "diet_age_11_18"
+        ],
+        headers
+      );
+    else return headers;
+  }
+
+  function sortHeaders(filter, headers) {
+    const result = filter.map((header) => {
+      return headers.find((elem) => {
+        return elem == header;
+      });
+    });
+
+    return result;
+  }
+
+  function sendRequest(time, value, column, otd_id=null) {
+    time = time.replaceAll("T", " ").split(".")[0];
+    $.ajax({
+      method: "post",
+      url: `update/`,
+      data: {
+        column,
+        time,
+        value,
+        otd_id,
+        csrfmiddlewaretoken: $.cookie("csrftoken"),
+      },
+      success: function (data) {
+        $('.row').remove()
+        const year = time.split(' ')[0].split('-')[0]
+        const month = time.split(' ')[0].split('-')[1]
+        const day = time.split(' ')[0].split('-')[2]
+        console.log(year);
+        console.log(month);
+        console.log(day);
+
+
+        json = JSON.parse(data.otd);
+        console.log(json);
+        for (let i = 0; i < json.length; i++) {
+          $(".tbody").append(
+            CreateTable(json[i]["fields"], ["dt_create", "fio_ms", "dt_svood"])
+          );
+        }
+      },
+    });
+  }
+
+  function changeDateFormat(date) {
+    //yyyy.mm.dd -> yyyy-mm-dd
+    return date.replaceAll(".", "-");
+  }
+
+  $(".create_new_svod").click(function () {
+    $.ajax({
+      method: "get",
+      url: "new_svod",
+      success: function (data) {
+        console.log(data)
+        const json = JSON.parse(data.svod);
+        for (let i = 0; i < json.length; i++) {
+          $(".tbody").append(
+            CreateTable(json[i]["fields"], ["dt_create", "fio_ms", "dt_svood"])
+          );
+        }
+      },
+    });
+  });
+
+  $(".save_data").click(() => {
+    $.ajax({
+      url: `report/${$("#datetime").val()}/`,
+      method: 'get',
+      success: (data) => {
+        console.log(data.status);
+      }
+    })
+  })
+
+  function GetDateAndTime(){//['YYYY', "MM", "DD", 'HH', "MM", 'SS']
+
+    return [...new Date().toLocaleDateString().split('.'), ...new Date().toLocaleTimeString().split(':')]
+    
+  }
 </script>
 {% endblock %}
