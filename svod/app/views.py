@@ -66,13 +66,10 @@ def main(request: HttpRequest):
     return render(request, 'app/main.html', context=context)
 
 
-
 def logout(request: HttpRequest):
     response = redirect('login')
     response.delete_cookie('otd')
     return response
-
-
 
 
 def get_otds(request: HttpRequest):
@@ -89,8 +86,6 @@ def get_otds(request: HttpRequest):
         return render(request, 'app/Otd_lists.html', context)
 
     return render(request, 'app/Otd_lists.html')
-
-
 
 
 def otd_details(request: HttpRequest, idotd : int):
@@ -122,43 +117,39 @@ def food_svod(request: HttpRequest):
 
 
 def get_svod_by_date(request: HttpRequest, year: int, month: int, day:int):
-    start_datetime = datetime.datetime(year=year, month=month, day=day)
-    delta_tm = datetime.timedelta(hours=23, minutes=59, seconds=58)
-    end_datetime = start_datetime + delta_tm
-
-    print(datetime.datetime.today())
+    start_datetime = timezone.datetime(year=year, month=month, day=day)
+    delta_tm = timezone.timedelta(hours=23, minutes=59, seconds=00)
 
     # для админа
     if (request.COOKIES.get('otd') == 'nmb1'):
-        otd_id = request.COOKIES.get('otd')
         svod = Food_svod.objects.filter(
-            dt_svood__range = (start_datetime, end_datetime)
+            dt_svood__range = (start_datetime, start_datetime + delta_tm)
         )
         return JsonResponse({
             'length': svod.count(),
-            'svod': serializers.serialize('json', svod)
+            'svod': list(svod.values())
         })
 
     #для отделений
     otd_id = request.COOKIES.get('otd')
     svod = Otd.objects.get(pk=otd_id)
     result = svod.food_svod_set.filter(
-        dt_svood__range = (start_datetime, end_datetime)
+        dt_svood__range = (start_datetime, start_datetime + delta_tm)
     )
 
-    print(start_datetime.isoformat())
-    print(end_datetime.isoformat())
+
 
     if (result.count() == 0):
         return JsonResponse({
             'length': 0
     })
 
-    data = serializers.serialize("json",result)
     return JsonResponse({
         'length': result.count(),
-        'svod': data,
+        'svod': list(result.values()),
     })
+
+
 
 def update_value(request: HttpRequest):
     column = request.POST['column']
@@ -214,12 +205,29 @@ def update_value(request: HttpRequest):
         svod.diet_age_7_11 = value
     if column == 'diet_age_11_18':
         svod.diet_age_11_18 = value
+    if column == 'dop':
+        svod.dop = value
     
     svod.save()
 
 
-    return JsonResponse({'otd': serializers.serialize('json', [svod, ])})
+    return JsonResponse({
+        'otd': serializers.serialize('json', list([svod,]))
+    })
     
+
+def set_fio(request: HttpRequest):
+    if (request.POST):
+        fio = request.POST['fio_ms']
+        svod = Food_svod.objects.get(idotd_id=request.COOKIES.get('otd'))
+        svod.fio_ms = fio
+        svod.save()
+
+        return JsonResponse({
+            'fio_ms': svod.fio_ms
+        })
+
+
 
 def create_new_food_svod(request: HttpRequest):
     if(request.COOKIES.get('otd') == None):
@@ -238,9 +246,8 @@ def report(request: HttpRequest, datetm:str ):
 
     if(request.COOKIES.get('otd') == None):
         return redirect('login')
-    print(datetm)
-    start_datetime = datetime.datetime.fromisoformat(datetm)
-    delta_td = datetime.timedelta(hours=23, minutes=59, seconds=58)
+    start_datetime = timezone.datetime.fromisoformat(datetm)
+    delta_td = timezone.timedelta(hours=23, minutes=59, seconds=00)
     end_datetime = start_datetime + delta_td
 
 
@@ -258,7 +265,6 @@ def report(request: HttpRequest, datetm:str ):
         svod_for_all_otd = Food_svod.objects.filter(
             dt_svood__range  =(start_datetime, end_datetime)
         )
-        print(svod_for_all_otd.count())
         create_report_for_all_otd(svod_for_all_otd, start_datetime.date())
         return JsonResponse({
             'message': 'success'
@@ -270,7 +276,6 @@ def report(request: HttpRequest, datetm:str ):
 
 
 def create_report_for_all_otd(svod, d: date):
-    print(timezone.datetime.today())
     right_alignment = Alignment(
         horizontal='right'
     )
@@ -331,7 +336,7 @@ def create_report_for_all_otd(svod, d: date):
     ws['A4'] = 'Сводка Питания'
     
     ws['A5'] = "На 7:00"
-    cell = ws['E8']
+    cell = ws['E5']
     cell.value = d
     cell.number_format = 'yyyy-mm-dd'
     
@@ -426,11 +431,26 @@ def create_report_for_all_otd(svod, d: date):
     ws.merge_cells('M13:M14')
     ws['M13'].value = 'НБД'
 
+    ws.merge_cells('O13:O14')
+    ws['O13'].value = '1-3 лет'
+
+    ws.merge_cells('P13:P14')
+    ws['P13'].value = '3-7 лет'
+
+    ws.merge_cells('Q13:Q14')
+    ws['Q13'].value = '7-11 лет'
+
+    ws.merge_cells('R13:R14')
+    ws['R13'].value = '11-18 лет'
+
+    ws.merge_cells('S13:S14')
+    ws['S13'].value = 'ДОП'
     
 
     ws.merge_cells('N13:N14')
     ws['N13'].value = 'НКД'
-    columns = 'ABCDEFGHIJKLMN'
+
+    columns = 'ABCDEFGHIJKLMNOPQRS'
     for i in range(0, len(svod)):
         if (i  < len(svod)):
             ws.insert_rows(15)
@@ -449,9 +469,39 @@ def create_report_for_all_otd(svod, d: date):
         ws['L15'] = item.diet_vdb
         ws['M15'] = item.diet_nbd
         ws['N15'] = item.diet_nkd
+        ws['O15'] = item.diet_age_1_3
+        ws['P15'] = item.diet_age_3_7
+        ws['Q15'] = item.diet_age_7_11
+        ws['R15'] = item.diet_age_11_18
+        ws['S15'] = item.dop
 
         
     ws["B42"] = f"=SUM(B15:B{14 + len(svod)})"
+    ws['E6'] = f"=SUM(B15:B{14 + len(svod)})"
+
+    sum  = 0
+    for item in svod:
+        sum =sum + item.child
+    ws['E7'] = sum
+
+    
+    sum  = 0
+    for item in svod:
+        sum =sum + item.mam
+    ws['E8'] = sum
+
+        
+    sum  = 0
+    for item in svod:
+        sum =sum + item.mam_nofood
+    ws['E9'] = sum
+
+    sum  = 0
+    for item in svod:
+        sum =sum + item.wow
+    ws['E10'] = sum
+
+
 
     
 
@@ -468,18 +518,19 @@ def create_report_for_all_otd(svod, d: date):
 
 
     # #полная граница граница сводки  [A15:N18]
-    for i in range(1, 15):
+    for i in range(1, 20):
         for j in range(1, len(svod) + 2):
             cell = ws.cell(row=14 + j, column=i)
             cell.border = around_Border
             cell.font = font_7
+            cell.alignment = Alignment(vertical='center', horizontal='center')
 
 
 
 
     #задаем ширину столбца
-    for i in range(0, 14):
-        columns = 'ABCDEFGHIJKLMN'
+    for i in range(0, 19):
+        columns = 'ABCDEFGHIJKLMNOPQRS'
         
         row = ws.column_dimensions[columns[i]]
         row.width = 5.43 +  0.67
@@ -491,12 +542,12 @@ def create_report_for_all_otd(svod, d: date):
         ws.row_dimensions[i].height = 12
 
             #меняем шрифт
-    for i in range(1, 15):
+    for i in range(1, 20):
         for j in range(1,100):
             cell = ws.cell(row=j, column=i)
             cell.font = Font(name='Arial', size=7)
             
-    for i in range(5, 11):
+    for i in range(5, 20):
         ws[f"A{i}"].font = Font(name='Arial')
 
     ws['A5'].font = Font(size=9)
@@ -510,13 +561,8 @@ def create_report_for_all_otd(svod, d: date):
     ws['N3'].font = font_6
 
 
-    filename = datetime.datetime.now().strftime("%m-%d-%Y %H.%M.%S")
+    filename = timezone.datetime.now().strftime("%m-%d-%Y %H.%M.%S")
     wb.save(f"{filename}.xlsx")
-
-
-
-
-
 
 
 

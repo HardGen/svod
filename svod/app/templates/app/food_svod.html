@@ -6,9 +6,10 @@
   <div><span>Главная М/С: </span>{{otd.msister|default_if_none:"--"}}</div>
   <a class="btn second" href="">Изменить данные</a>
 </div>
+<h2 class="am7">Сводка на 7:00</h2>
 <input type="date" name="datetime" id="datetime" class="datetime" />
 <p class="not-data"></p>
-<h2 class="am7">Сводка на 7:00</h2>
+
 
 <div class="table_content">
   <table border="1px">
@@ -37,7 +38,6 @@
         <th>03</th>
         <th>ОВД</th>
         <th>ЩД</th>
-        <th>Д</th>
         <th>ВБД</th>
         <th>НБД</th>
         <th>НКД</th>
@@ -45,6 +45,7 @@
         <th>3-7 лет</th>
         <th>7-11 лет</th>
         <th>11-18 лет</th>
+        <th>ДП</th>
       </tr>
     </thead>
     <tbody class="tbody"></tbody>
@@ -52,7 +53,7 @@
 </div>
 
 <div class="svod_update_date"></div>
-<div class="fio_ms">Дежурная</div>
+<div class="fio_ms">Дежурная: <input type="text" class="fio_ms-input"></div>
 <button class="create_new_svod">Добавить Данные</button>
 
 <div class="print">
@@ -73,6 +74,8 @@
 
 
 <script>
+
+
   Date.prototype.toDateInputValue = function () {
     var local = new Date(this);
     local.setMinutes(this.getMinutes() - this.getTimezoneOffset());
@@ -82,6 +85,11 @@
   //отравляем запрос на получение текущих данных
   $(document).ready(function () {
 
+    if ($.cookie('otd') === 'nmb1') {
+      $(".fio_ms").remove()
+      $(".info").remove()
+    }
+
     $("#datetime").val(new Date().toDateInputValue());
 
     $(".save_data").text(`Сохранить данные за ${$("#datetime").val()}`)
@@ -90,6 +98,24 @@
     const year = today.split("-")[0];
     const month = today.split("-")[1];
     const day = today.split("-")[2];
+
+    $(".fio_ms-input").keypress(function (e) {
+      if (e.key === "Enter") {
+        $.ajax({
+          url: `set_fio_ms/`,
+          method: 'POST',
+          data: {
+            otd: $.cookie('otd'),
+            fio_ms: e.target.value,
+            csrfmiddlewaretoken: $.cookie("csrftoken"),
+          },
+          success: function(data){
+            $(".fio_ms-input").val(data['fio_ms'])
+            }
+        })
+        
+      }
+    })
     
     
     $.ajax({
@@ -101,11 +127,12 @@
         }
 
         if (data.svod != undefined) {
+          json = data.svod
           $(".create_new_svod").removeClass("active");
-          json = JSON.parse(data.svod);
+          $(".fio_ms-input").val(json[0]['fio_ms'])
           for (let i = 0; i < json.length; i++) {
             $(".tbody").append(
-              CreateTable(json[i]["fields"], [
+              CreateTable(json[i], [
                 "dt_create",
                 "fio_ms",
                 "dt_svood",
@@ -113,9 +140,9 @@
             );
           }
           $("fio_ms")
-            .text(json[0]["fields"]["fio_ms"])
+            .text(json[0]["fio_ms"])
           $(".svod_update_date")
-          .text("Время Внесения сводки: " + json[0]["fields"]["dt_create"])
+          .text("Время Внесения сводки: " + json[0]["dt_create"])
           .addClass("create_svod")
         }
       },
@@ -145,11 +172,10 @@
         }
         if (data.svod != undefined) {
           $(".create_new_svod").removeClass("active");
-          json = JSON.parse(data.svod);
-          console.log(json);
+          json = data.svod
           for (let i = 0; i < json.length; i++) {
             $(".tbody").append(
-              CreateTable(json[i]["fields"], [
+              CreateTable(json[i], [
                 "dt_create",
                 "fio_ms",
                 "dt_svood",
@@ -157,9 +183,9 @@
             );
           }
           $("fio_ms")
-            .text(json[0]["fields"]["fio_ms"])
+            .text(json[0]["fio_ms"])
           $(".svod_update_date")
-          .text("Время Внесения сводки: " + json[0]["fields"]["dt_create"])
+          .text("Время Внесения сводки: " + json[0]["dt_create"])
           .addClass("create_svod")
         }
       },
@@ -185,25 +211,24 @@
         .attr("column-name", headers[i])
         .dblclick(function () {
           $(".input-table").remove();
+          if($.cookie('otd') === 'nmb1') return
           //при клике на столбец otd_id ничего не должно происходить
           if ($(this).attr("column-name") == "idotd") return;
-
+          
           const time = $(this).attr("time");
           const value = $(this).attr("value");
           const column = $(this).attr("column-name");
           const otd_id = $(this).attr('otd_id')
           $(".input").remove();
           const inp = document.createElement("input");
-
           $(inp)
             .val(value)
             .addClass("input-table")
+            .focus()
             .attr("type", "number")
             .keypress(function (e) {
               if (e.key === "Enter") {
-                console.log("save");
                 if($.cookie('otd') == 'nmb1'){
-                  console.log(otd_id)
                   sendRequest(time, e.target.value, column, otd_id);
                 }
                 else
@@ -211,7 +236,8 @@
                 $(this).remove();
               }
             });
-          $(this).append(inp);
+
+            $(this).append(inp);
         });
       $(tr).append(map.get(headers[i]));
     }
@@ -242,15 +268,15 @@
           "diet_03",
           "diet_ovd",
           "diet_shd",
-          "diet_child",
           "diet_vdb",
           "diet_nbd",
           "diet_nkd",
           "diet_age_1_3",
           "diet_age_3_7",
           "diet_age_7_11",
-          "diet_age_11_18"
-        ],
+          "diet_age_11_18",
+          'dop'
+],
         headers
       );
     else return headers;
@@ -288,7 +314,7 @@
         console.log(day);
 
 
-        json = JSON.parse(data.otd);
+        json = JSON.parse(data.otd)
         console.log(json);
         for (let i = 0; i < json.length; i++) {
           $(".tbody").append(

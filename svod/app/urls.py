@@ -13,6 +13,7 @@ urlpatterns = [
     path('food_svod/new_svod/', create_new_food_svod),
     path('food_svod/<int:year>/<int:month>/<int:day>/', get_svod_by_date, name='svod_by_date'),
     path('food_svod/update/', update_value),
-    path('food_svod/report/<str:datetm>/', report)
+    path('food_svod/report/<str:datetm>/', report),
+    path('food_svod/set_fio_ms/', set_fio, name='set-fio')
 ]
 
