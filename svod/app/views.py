@@ -220,7 +220,8 @@ def update_value(request: HttpRequest):
 def set_fio(request: HttpRequest):
     if (request.POST):
         fio = request.POST['fio_ms']
-        svod = Food_svod.objects.get(idotd_id=request.COOKIES.get('otd'))
+        idSvod = request.POST['id']
+        svod = Food_svod.objects.get(pk=idSvod, idotd_id=request.COOKIES.get('otd'))
         svod.fio_ms = fio
         svod.save()
 
@@ -230,11 +231,18 @@ def set_fio(request: HttpRequest):
 
 
 
-def create_new_food_svod(request: HttpRequest):
+def create_new_food_svod(request: HttpRequest, date: str):
     if(request.COOKIES.get('otd') == None):
         return redirect('login')
+    
+    date += " 00:00:00"
+    d = datetime.datetime.strptime(date,"%Y-%m-%d %H:%M:%S" )
+    print(d)
     otd = Otd.objects.get(pk=request.COOKIES.get('otd'))
     new_food_svod = otd.food_svod_set.create()
+    new_food_svod.dt_svood = d
+    new_food_svod.dt_create = d
+    new_food_svod.save()
 
 
     return JsonResponse({
@@ -266,14 +274,12 @@ def report(request: HttpRequest, datetm:str ):
         svod_for_all_otd = Food_svod.objects.filter(
             dt_svood__range  =(start_datetime, end_datetime)
         )
+
         create_report_for_all_otd(svod_for_all_otd, start_datetime.date())
         return JsonResponse({
             'message': 'success'
         })
 
-
-
-    
 
 
 def create_report_for_all_otd(svod, d: date):
@@ -282,9 +288,6 @@ def create_report_for_all_otd(svod, d: date):
     )
     font_6 = Font(
         size= 6
-    )
-    font_9 = Font(
-        size= 9
     )
 
     font_7 = Font(
@@ -307,10 +310,6 @@ def create_report_for_all_otd(svod, d: date):
     )
 
 
-    left_border = Border( left=side )
-    right_border = Border(right=side)
-    top_border = Border(top=side)
-    bottom_border = Border(bottom=side)
    
     wb = Workbook()
     ws = wb.active

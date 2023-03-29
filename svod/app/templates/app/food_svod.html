@@ -48,13 +48,17 @@
         <th>ДП</th>
       </tr>
     </thead>
-    <tbody class="tbody"></tbody>
+    <tbody class="tbody">
+    </tbody>
   </table>
+  <div class="create_new_svod">+</div>
 </div>
 
-<div class="svod_update_date"></div>
-<div class="fio_ms">Дежурная: <input type="text" class="fio_ms-input"></div>
-<button class="create_new_svod">Добавить Данные</button>
+<div class="info_update">
+  <div class="svod_update_date"></div>
+    <div class="fio_ms">Дежурная: <input type="text" class="fio_ms-input"></div>
+  <p class="fio_ms-p"></p>
+</div>
 
 <div class="print">
   <fieldset>
@@ -107,10 +111,12 @@
           data: {
             otd: $.cookie('otd'),
             fio_ms: e.target.value,
+            id: $(".fio_ms-input").attr('id'),
             csrfmiddlewaretoken: $.cookie("csrftoken"),
           },
           success: function(data){
-            $(".fio_ms-input").val(data['fio_ms'])
+            $(".fio_ms-input").remove()
+            $(".fio_ms-p").text(data['fio_ms'])
             }
         })
         
@@ -130,6 +136,7 @@
           json = data.svod
           $(".create_new_svod").removeClass("active");
           $(".fio_ms-input").val(json[0]['fio_ms'])
+          $(".fio_ms-input").attr('id', json[0].id)
           for (let i = 0; i < json.length; i++) {
             $(".tbody").append(
               CreateTable(json[i], [
@@ -142,7 +149,7 @@
           $("fio_ms")
             .text(json[0]["fio_ms"])
           $(".svod_update_date")
-          .text("Время Внесения сводки: " + json[0]["dt_create"])
+          .text("Время Внесения сводки: " + changeDateFormat(json[0]["dt_create"]))
           .addClass("create_svod")
         }
       },
@@ -169,10 +176,16 @@
         if (data.svod == undefined) {
           console.log("нет данных");
           $(".create_new_svod").addClass("active");
+          $(".fio_ms-input").val("")
+          $(".svod_update_date").text("");
+          $(".create_new_svod").addClass("active");
         }
         if (data.svod != undefined) {
           $(".create_new_svod").removeClass("active");
+          //$(".fio_ms-p").text(json[0].fio_ms)
+          $(".fio_ms-input").removeClass('active')
           json = data.svod
+          //$(".fio_ms-input").attr('id', json[0].id)
           for (let i = 0; i < json.length; i++) {
             $(".tbody").append(
               CreateTable(json[i], [
@@ -182,11 +195,10 @@
               ])
             );
           }
-          $("fio_ms")
-            .text(json[0]["fio_ms"])
-          $(".svod_update_date")
-          .text("Время Внесения сводки: " + json[0]["dt_create"])
-          .addClass("create_svod")
+         // $("fio_ms").text(json[0]["fio_ms"])
+          // $(".svod_update_date")
+          // .text("Время Внесения сводки: " + changeDateFormat(json[0]["dt_create"]))
+          // .addClass("create_svod")
         }
       },
     });
@@ -326,17 +338,20 @@
   }
 
   function changeDateFormat(date) {
-    //yyyy.mm.dd -> yyyy-mm-dd
-    return date.replaceAll(".", "-");
+    return date.replace('T', ' ')
   }
 
   $(".create_new_svod").click(function () {
+    const date = $("#datetime").val()
     $.ajax({
       method: "get",
-      url: "new_svod",
+      url: `new_svod/${date}/`,
       success: function (data) {
         console.log(data)
         const json = JSON.parse(data.svod);
+        console.log(json)
+        $(".create_new_svod").removeClass('active')
+        $(".fio_ms-input").attr('id', json[0].pk)
         for (let i = 0; i < json.length; i++) {
           $(".tbody").append(
             CreateTable(json[i]["fields"], ["dt_create", "fio_ms", "dt_svood"])

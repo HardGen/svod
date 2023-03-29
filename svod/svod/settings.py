@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
+    'django_cron',
     'app.apps.AppConfig',
     
 ]
@@ -87,6 +88,11 @@ DATABASES = {
         'PORT': ''
     }
 }
+
+CRON_CLASSES = [
+    "app.cron.MyCronJob",
+    # ...
+]
 
 
 # Password validation

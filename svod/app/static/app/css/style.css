@@ -157,7 +157,6 @@ html {
 table {
   border-collapse: collapse;
   min-width: 100%;
-  margin-bottom: 20px;
 }
 
 td,
@@ -316,4 +315,28 @@ td {
 
 .datetime {
   margin-bottom: 20px;
+}
+
+.fio_ms-p {
+  display: inline-block;
+}
+
+
+.create_new_svod {
+  border: 1px solid black;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  font-size: 30px;
+  font-weight: 600;
+}
+
+.create_new_svod:hover {
+  background-color: #999;
+  color: white;
+}
+
+.info_update {
+  display: flex;
+  justify-content: space-around;
 }
