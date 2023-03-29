@@ -56,7 +56,7 @@
 
 <div class="info_update">
   <div class="svod_update_date"></div>
-    <div class="fio_ms">Дежурная: <input type="text" class="fio_ms-input"></div>
+    <div class="fio_ms">Дежурная: <input type="text" class="fio_ms-input"><button class="fio_ms-btn-ok">ok</button></div>
   <p class="fio_ms-p"></p>
 </div>
 
@@ -70,7 +70,8 @@
         <input class="report_type"  type="radio" name="report_type" id="report_type3"><label class="radiobtn_lbl" for="report_type3">Общая сводка</label>
       </div>
       <div class="save">
-        <div class="save_data btn">Сохранить данные за </div>
+        <!-- <a href="report/" class="save_data btn">Сохранить данные за </a> -->
+        <a href="report/" class="report_btn" target="_blank">Сохранить данные за </a>
       </div>
     </div>
   </fieldset>
@@ -95,6 +96,7 @@
     }
 
     $("#datetime").val(new Date().toDateInputValue());
+    $(".report_btn").attr('href', 'report/'+ $("#datetime").val() + "/")
 
     $(".save_data").text(`Сохранить данные за ${$("#datetime").val()}`)
 
@@ -103,6 +105,26 @@
     const month = today.split("-")[1];
     const day = today.split("-")[2];
 
+    $(".fio_ms-btn-ok").click(() => {
+
+        $.ajax({
+          url: `set_fio_ms/`,
+          method: 'POST',
+          data: {
+            otd: $.cookie('otd'),
+            fio_ms: $(".fio_ms-input").val(),
+            id: $(".fio_ms-input").attr('id'),
+            csrfmiddlewaretoken: $.cookie("csrftoken"),
+          },
+          success: function(data){
+            $(".fio_ms-input").remove()
+            $(".fio_ms-p").text(data['fio_ms'])
+            $(this).hide()
+            }
+        })
+
+    })
+      //дублирование (исправлю) $(".fio_ms-input").keypress(function (e) { ---- } $(".fio_ms-btn-ok").click(() => {
     $(".fio_ms-input").keypress(function (e) {
       if (e.key === "Enter") {
         $.ajax({
@@ -110,13 +132,14 @@
           method: 'POST',
           data: {
             otd: $.cookie('otd'),
-            fio_ms: e.target.value,
+            fio_ms: $(".fio_ms-input").val(),
             id: $(".fio_ms-input").attr('id'),
             csrfmiddlewaretoken: $.cookie("csrftoken"),
           },
           success: function(data){
             $(".fio_ms-input").remove()
             $(".fio_ms-p").text(data['fio_ms'])
+            $(".fio_ms-btn-ok").hide()
             }
         })
         
@@ -130,11 +153,13 @@
       success: function (data, status) {
         if (data.svod == undefined) {
           $(".create_new_svod").addClass("active");
+          $("fieldset").remove('active')
         }
 
         if (data.svod != undefined) {
           json = data.svod
           $(".create_new_svod").removeClass("active");
+          $("fieldset").addClass('active')
           $(".fio_ms-input").val(json[0]['fio_ms'])
           $(".fio_ms-input").attr('id', json[0].id)
           for (let i = 0; i < json.length; i++) {
@@ -162,6 +187,7 @@
     const month = e.target.value.split("-")[1];
     const day = e.target.value.split("-")[2];
     console.log(`${year}-${month}-${day}`);
+    $(".report_btn").attr('href', 'report/'+ $("#datetime").val() + "/").text('Сохранить данные за' + $("#datetime").val())
 
     GetDateAfterLoad(year, day, month)
   });
@@ -179,9 +205,11 @@
           $(".fio_ms-input").val("")
           $(".svod_update_date").text("");
           $(".create_new_svod").addClass("active");
+          $("fieldset").removeClass('active')
         }
         if (data.svod != undefined) {
           $(".create_new_svod").removeClass("active");
+          $("fieldset").addClass('active')
           //$(".fio_ms-p").text(json[0].fio_ms)
           $(".fio_ms-input").removeClass('active')
           json = data.svod
@@ -195,10 +223,6 @@
               ])
             );
           }
-         // $("fio_ms").text(json[0]["fio_ms"])
-          // $(".svod_update_date")
-          // .text("Время Внесения сводки: " + changeDateFormat(json[0]["dt_create"]))
-          // .addClass("create_svod")
         }
       },
     });
@@ -239,6 +263,10 @@
             .focus()
             .attr("type", "number")
             .keypress(function (e) {
+              if(e.key == 'z' || e.key == 'Z') {
+                $(this).remove();
+                return
+              }
               if (e.key === "Enter") {
                 if($.cookie('otd') == 'nmb1'){
                   sendRequest(time, e.target.value, column, otd_id);
@@ -366,7 +394,7 @@
       url: `report/${$("#datetime").val()}/`,
       method: 'get',
       success: (data) => {
-        console.log(data.status);
+        console.log(data);
       }
     })
   })

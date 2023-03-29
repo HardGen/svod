@@ -21,7 +21,15 @@
 html {
   font-size: 16px;
 }
-
+a {
+  color: black;
+}
+.report_btn {
+  display: inline-block;
+  padding: 10px 15px;
+  border: 1px solid black;
+  text-decoration: none;
+}
 .header {
   padding: 15px;
   margin-bottom: 15px;
@@ -204,6 +212,8 @@ tr:nth-child(even) {
   background-color: black;
 }
 
+
+
 .nav_btn_move span:last-of-type {
   position: absolute;
   bottom: 0;
@@ -253,11 +263,16 @@ tr:nth-child(even) {
 }
 
 fieldset {
+  display: none;
   margin-top: 30px;
   padding-top: 30px;
   padding-bottom: 30px;
   padding-left: 10px;
   padding-right: 10px;
+}
+
+fieldset.active {
+  display: block;
 }
 legend {
   font-size: 24px;

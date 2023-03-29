@@ -1,10 +1,11 @@
 
+import os
 from openpyxl import Workbook
 from openpyxl.worksheet.page import PrintPageSetup
 import datetime
 import json
 from django.contrib import messages
-from django.http import Http404, HttpRequest, JsonResponse
+from django.http import FileResponse, Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from .models import *
@@ -26,7 +27,7 @@ def login(request: HttpRequest):
 
         if (request.POST['itotd'] == 'nmb1'):
             response = redirect('main')
-            response.set_cookie('otd','nmb1', max_age=60 * 120)
+            response.set_cookie('otd','nmb1')
             return response
             
 
@@ -46,7 +47,7 @@ def login(request: HttpRequest):
 
 def main(request: HttpRequest):
     if(request.COOKIES.get('otd') == None):
-        print(request.COOKIES.get('otd'))
+        return redirect(reverse('login'))
 
     otd_id = request.COOKIES.get('otd')
 
@@ -266,19 +267,23 @@ def report(request: HttpRequest, datetm:str ):
         svod = Food_svod.objects.get(idotd_id=otd_id, 
         dt_svood__range = (start_datetime, end_datetime)               
         )
-        create_report_seven(otd_id, svod, start_datetime.date(), "СВОДКА ПИТАНИЯ")
-        return JsonResponse({
-            'message': 'success'
-        })
+        filename = create_report_seven(otd_id, svod, start_datetime.date(), "СВОДКА ПИТАНИЯ")
+        
+        response = FileResponse(open(filename, 'rb'))
+        response['Content-Type'] = 'application/octet-stream'
+
+        return response
+
     else:
         svod_for_all_otd = Food_svod.objects.filter(
             dt_svood__range  =(start_datetime, end_datetime)
         )
 
-        create_report_for_all_otd(svod_for_all_otd, start_datetime.date())
-        return JsonResponse({
-            'message': 'success'
-        })
+        filename = create_report_for_all_otd(svod_for_all_otd, start_datetime.date())
+        response = FileResponse(open(filename, 'rb'))
+        response['Content-Type'] = 'application/octet-stream'
+
+        return response
 
 
 
@@ -585,7 +590,7 @@ def create_report_for_all_otd(svod, d: date):
     ws.page_setup.fitToWidth = 1
 
     wb.save(f"{filename}.xlsx")
-
+    return f"{filename}.xlsx"
 
 
 
@@ -769,6 +774,8 @@ def create_report_seven(otd: Otd, svod: Food_svod, d: date, title:str):
 
     filename = timezone.datetime.now().strftime("%m-%d-%Y %H.%M.%S")
     wb.save(f"{filename}.xlsx")
+
+    return f"{filename}.xlsx"
 
 
 
