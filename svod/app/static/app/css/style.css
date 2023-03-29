@@ -86,6 +86,7 @@ html {
   border-top-left-radius: 10px;
   border-bottom-left-radius: 10px;
   padding-right: 10px;
+  padding-left: 15px;
 }
 
 .nav__items {
@@ -156,7 +157,6 @@ html {
 table {
   border-collapse: collapse;
   min-width: 100%;
-  margin-bottom: 20px;
 }
 
 td,
@@ -214,8 +214,8 @@ tr:nth-child(even) {
   top: 50%;
   transform: translateY(-50%);
 }
-create_new_svod create_new_svod .input-table {
-  width: 100%;
+.input-table {
+  width: 50px;
   height: 100%;
 }
 
@@ -303,12 +303,40 @@ legend {
     justify-content: space-around;
 }
 
-
+  
 td {
   text-align: center;
 }
 
 .table_content {
-  height: 350px;
+  height: 500px;
   overflow: auto;
+}
+
+.datetime {
+  margin-bottom: 20px;
+}
+
+.fio_ms-p {
+  display: inline-block;
+}
+
+
+.create_new_svod {
+  border: 1px solid black;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  font-size: 30px;
+  font-weight: 600;
+}
+
+.create_new_svod:hover {
+  background-color: #999;
+  color: white;
+}
+
+.info_update {
+  display: flex;
+  justify-content: space-around;
 }

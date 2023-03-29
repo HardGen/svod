@@ -38,6 +38,7 @@ class Food_svod(models.Model):
     diet_age_3_7 = models.SmallIntegerField(null=True, blank=True, default=0)
     diet_age_7_11 = models.SmallIntegerField(null=True, blank=True, default=0)
     diet_age_11_18 = models.SmallIntegerField(null=True, blank=True, default=0)
+    dop = models.SmallIntegerField(null=True, blank=True, default=0)
     diet_vdb = models.SmallIntegerField(default=0)
     diet_nbd = models.SmallIntegerField(default=0)
     diet_nkd = models.SmallIntegerField(default=0)
