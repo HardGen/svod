@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +26,7 @@ SECRET_KEY = 'django-insecure-vvf$k60-po_=8+(2v#8$i&ce*+$!f%r%19=j^9@cx1w)z0!b8*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', '192.168.0.76']
 
 
 
@@ -83,9 +84,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'svod',
-        'USER': 'svod',
-        'PASSWORD': '0979',
-        'HOST': 'localhost',
+        'USER': 'postgres',
+        'PASSWORD': '1',
+        'HOST': '192.168.66.17',
         'PORT': ''
     }
 }
@@ -131,7 +132,7 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
-
+STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 

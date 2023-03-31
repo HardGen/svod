@@ -1,10 +1,11 @@
 {% extends 'app/base.html' %} {% block content %}
+<h1>Сводка по питанию</h1>
 <div class="info">
   <div>
     <span>Заведеющая отделением: </span>{{otd.zav_otd|default_if_none:"--"}}
   </div>
   <div><span>Главная М/С: </span>{{otd.msister|default_if_none:"--"}}</div>
-  <a class="btn second" href="">Изменить данные</a>
+  <div class="info__change-data"><a class="btn second" href="">Изменить данные</a></div>
 </div>
 <h2 class="am7">Сводка на 7:00</h2>
 <input type="date" name="datetime" id="datetime" class="datetime" />
@@ -94,7 +95,6 @@
       $(".fio_ms").remove()
       $(".info").remove()
     }
-
     $("#datetime").val(new Date().toDateInputValue());
     $(".report_btn").attr('href', 'report/'+ $("#datetime").val() + "/")
 
@@ -188,7 +188,7 @@
     const day = e.target.value.split("-")[2];
     console.log(`${year}-${month}-${day}`);
     $(".report_btn").attr('href', 'report/'+ $("#datetime").val() + "/").text('Сохранить данные за' + $("#datetime").val())
-
+    
     GetDateAfterLoad(year, day, month)
   });
 
@@ -210,10 +210,14 @@
         if (data.svod != undefined) {
           $(".create_new_svod").removeClass("active");
           $("fieldset").addClass('active')
-          //$(".fio_ms-p").text(json[0].fio_ms)
-          $(".fio_ms-input").removeClass('active')
           json = data.svod
-          //$(".fio_ms-input").attr('id', json[0].id)
+          if($.cookie('otd') != 'nmb1') {
+            $(".fio_ms-p").text(json[0].fio_ms)
+            $(".fio_ms-input").attr('id', json[0].id)
+            $(".svod_update_date")
+            .text("Время Внесения сводки: " + changeDateFormat(json[0]["dt_create"]))
+          }
+          $(".fio_ms-input").removeClass('active')
           for (let i = 0; i < json.length; i++) {
             $(".tbody").append(
               CreateTable(json[i], [

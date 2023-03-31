@@ -14,6 +14,7 @@ from django.core import serializers
 from django.utils import timezone
 
 from openpyxl.styles import  Alignment,  Font, Border, Side
+from django.db.models import Sum
 
 
 from datetime import date
@@ -98,6 +99,37 @@ def otd_details(request: HttpRequest, idotd : int):
     return render(request, 'app/otd_details.html', context={'otd': otd})
 
 
+
+def morning_svod(request: HttpRequest):
+    if(request.COOKIES.get('otd') == None):
+        return redirect('login')
+
+    otd_id = request.COOKIES.get('otd')
+    if (otd_id == 'nmb1'):
+        return render(request, 'app/morning_svod.html')
+    return render(request, 'app/morning_svod.html')
+
+
+
+def pajar_svod(request: HttpRequest):
+    if(request.COOKIES.get('otd') == None):
+        return redirect('login')
+
+    otd_id = request.COOKIES.get('otd')
+    if (otd_id == 'nmb1'):
+        return render(request, 'app/pajar_svod.html')
+    return render(request, 'app/pajar_svod.html')
+
+
+def report_view(request: HttpRequest):
+    if(request.COOKIES.get('otd') == None):
+        return redirect('login')
+
+    otd_id = request.COOKIES.get('otd')
+    if (otd_id == 'nmb1'):
+        return render(request, 'app/reports.html')
+    return render(request, 'app/reports.html')
+
 def food_svod(request: HttpRequest):
     if(request.COOKIES.get('otd') == None):
         return redirect('login')
@@ -127,10 +159,15 @@ def get_svod_by_date(request: HttpRequest, year: int, month: int, day:int):
         svod = Food_svod.objects.filter(
             dt_svood__range = (start_datetime, start_datetime + delta_tm)
         )
+
+        result = []
+
+
         return JsonResponse({
             'length': svod.count(),
-            'svod': list(svod.values())
+            'svod': list(svod.values()),
         })
+
 
     #для отделений
     otd_id = request.COOKIES.get('otd')
@@ -277,13 +314,27 @@ def report(request: HttpRequest, datetm:str ):
     else:
         svod_for_all_otd = Food_svod.objects.filter(
             dt_svood__range  =(start_datetime, end_datetime)
-        )
+        ).order_by('-idotd_id')
+        print(svod_for_all_otd)
 
         filename = create_report_for_all_otd(svod_for_all_otd, start_datetime.date())
         response = FileResponse(open(filename, 'rb'))
         response['Content-Type'] = 'application/octet-stream'
 
         return response
+
+
+def report__start__stop(request: HttpRequest, start_dt: str, stop_dt: str):
+    start_datetime = datetime.date.fromisoformat(start_dt)
+    stop_datetime = datetime.date.fromisoformat(stop_dt)
+    svod_for_all_otd = Food_svod.objects.values('idotd').filter(
+        dt_svood__range  =(start_datetime, stop_datetime)
+    ).annotate(vsego=Sum('vsego'))
+    print(svod_for_all_otd)
+    return JsonResponse({
+         'svod': list(svod_for_all_otd),
+         'count': svod_for_all_otd.count()
+    })
 
 
 
