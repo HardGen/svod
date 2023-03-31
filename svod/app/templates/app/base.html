@@ -13,32 +13,34 @@
 <body>
     <header class="header">
         <div class="header__logo">{{otd.otd_name}}</div>
-        <a href="{% url 'logout' %}" class="btn danger">Выйти</a>
+        <a href="{% url 'logout' %}" class="btn danger exit">Выйти</a>
     </header>
+    <nav class="nav">
+        <ul class="nav__items">
+            <li class="nav__item"><a id="nav__link1" href="{% url 'morning_svod' %}" class="nav__link">Утренняя Сводка</a></li>
+            <li class="nav__item"><a id="nav__link2" href="{% url 'pajar_svod' %}" class="nav__link" >Сводка по пожарной безопасности</a></li>
+            <li class="nav__item"><a id="nav__link3" href="{% url 'food_svod' %}" class="nav__link" >Сводка по питанию</a></li>
+            <li class="nav__item"><a id="nav__link4" href="{% url 'report' %}" class="nav__link 2">Отчеты</a></li>
+            <li class="nav__item"><a id="nav__link5" href="{% url 'otds' %}" class="nav__link">Отделения</a></li>
+        </ul>
+    </nav>
     <main class="main">
-        <nav class="nav">
-            <ul class="nav__items">
-                <li class="nav__item"><a href="#" class="nav__link">Утренняя Сводка</a></li>
-                <li class="nav__item"><a href="#" class="nav__link">Сводка по пожарной безопасности</a></li>
-                <li class="nav__item"><a href="{% url 'food_svod' %}" class="nav__link">Сводка по питанию</a></li>
-                <li class="nav__item"><a href="#" class="nav__link">Отчеты</a></li>
-                <li class="nav__item"><a href="{% url 'otds' %}" class="nav__link">Отделения</a></li>
-
-            </ul>
-        </nav>
-        <div class="nav_btn_move">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
         <content class="content">
             {% block content  %} {% endblock %}
         </content>
     </main>
 
     <script>
-        $(".nav_btn_move").click(function(e) {
-            $('.nav').fadeToggle()
+        $('.nav__link').click(function(e) {
+            $('.nav__link').removeClass('active')
+            localStorage.setItem('current_nav_item', $(this).attr('id'))
+            $(`#${localStorage.getItem('current_nav_item')}`).addClass('active')
+        })
+
+        $('.exit').click(() => localStorage.clear('current_nav_item'))
+
+        $(document).ready((e) => {
+            $(`#${localStorage.getItem('current_nav_item')}`).addClass('active')
         })
     </script>
 </body>

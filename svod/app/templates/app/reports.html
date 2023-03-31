@@ -1,0 +1,39 @@
+{% extends 'app/base.html' %} {% block content %}
+<h1>Отчеты</h1>
+<div class="dates">
+    <input type="date" class="date-period-input start-date"> -
+    <input type="date" class="date-period-input stop-date">
+</div>
+
+<div class="report-types">
+    <div>
+        <input class="report_type" type="radio" name="report_type" id="report-report_type1" checked><label
+            class="radiobtn_lbl" for="report-report_type1">отчет по питанию да период</label>
+    </div>
+</div>
+<a href="report/" class="report_btn" >Печать Отчета</a>
+<script>
+
+    Date.prototype.toDateInputValue = function () {
+        var local = new Date(this);
+        local.setMinutes(this.getMinutes() - this.getTimezoneOffset());
+        return local.toJSON().slice(0, 10);
+    };
+
+    //отравляем запрос на получение текущих данных
+    $(document).ready(function () {
+        $(".date-period-input").val(new Date().toDateInputValue());
+        $(".date-period-input").val(new Date());
+    })
+
+    $('.start-date').change(function () {
+        let href = "" + $(".start-date").val()+ "/" + $('.stop-date').val() + "/"
+        $(".report_btn").attr('href', href)
+    })
+
+    $('.stop-date').change(function () {
+        let href = "" + $(".start-date").val()+ "/" + $('.stop-date').val() + "/"
+        $(".report_btn").attr('href', href)
+    })
+</script>
+{% endblock %}
