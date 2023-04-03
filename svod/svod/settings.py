@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ['127.0.0.1', '192.168.0.76']
 # Application definition
 
 INSTALLED_APPS = [
+    'app.apps.AppConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -42,8 +43,6 @@ INSTALLED_APPS = [
     'django_extensions',
     'import_export',
     'django_cron',
-    'app.apps.AppConfig',
-    
 ]
 
 MIDDLEWARE = [
@@ -93,7 +92,6 @@ DATABASES = {
 
 CRON_CLASSES = [
     "app.cron.MyCronJob",
-    # ...
 ]
 
 
